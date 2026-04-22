@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./agent-panel.module.css";
 
 type AgentPanelProps = {
@@ -30,9 +31,9 @@ export function AgentPanel({ name = "Art" }: AgentPanelProps) {
           </div>
 
           <div className={styles.voiceRow}>
-            <button type="button" className={styles.voiceButton}>
+            <Link href="/voice" className={styles.voiceButton}>
               Voice Session
-            </button>
+            </Link>
           </div>
         </div>
       </div>
