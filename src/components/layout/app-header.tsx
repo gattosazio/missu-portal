@@ -41,7 +41,7 @@ export function AppHeader({
               <Link href="/admin" className={styles.menuLink}>
                 Admin Panel
               </Link>
-              <Link href="/logout" className={styles.menuLink}>
+              <Link href="/login" className={styles.menuLink}>
                 Logout
               </Link>
             </div>

@@ -17,6 +17,22 @@ import { getLiveKitToken } from "@/actions/rtc";
 
 const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || "";
 const AGENT_IDENTITY = "MISSU_CORE";
+const TRANSCRIPT_TOPIC = "missu.transcript";
+
+type TranscriptItem = {
+  id: string;
+  speaker: "user" | "agent";
+  text: string;
+};
+
+type TranscriptEventPayload = {
+  type: "transcript";
+  speaker: "user" | "agent";
+  text: string;
+  final: boolean;
+  participantIdentity?: string;
+  createdAt?: number;
+};
 
 function MicIcon({ muted }: { muted: boolean }) {
   return (
@@ -44,12 +60,17 @@ export function VoiceStage() {
   const [agentSpeaking, setAgentSpeaking] = useState(false);
   const [statusText, setStatusText] = useState("Click the mic to start a voice session.");
   const [errorText, setErrorText] = useState("");
+  const [transcriptItems, setTranscriptItems] = useState<TranscriptItem[]>([]);
 
   useEffect(() => {
     return () => {
       void disconnectRoom();
     };
   }, []);
+
+  function appendTranscriptItem(item: TranscriptItem) {
+    setTranscriptItems((current) => [...current, item].slice(-8));
+  }
 
   function detachRemoteTrack() {
     if (currentRemoteTrackRef.current && remoteAudioElementRef.current) {
@@ -73,7 +94,6 @@ export function VoiceStage() {
     track.attach(remoteAudioElementRef.current);
 
     remoteAudioElementRef.current.autoplay = true;
-
     remoteAudioElementRef.current.setAttribute("playsinline", "");
 
     void remoteAudioElementRef.current.play().catch(() => {
@@ -81,6 +101,29 @@ export function VoiceStage() {
     });
 
     setStatusText(`Connected. Receiving audio from ${publication.trackName || "MISSU"}.`);
+  }
+
+  function handleTranscriptData(payload: Uint8Array, topic?: string) {
+    if (topic !== TRANSCRIPT_TOPIC) {
+      return;
+    }
+
+    try {
+      const decoded = new TextDecoder().decode(payload);
+      const data = JSON.parse(decoded) as TranscriptEventPayload;
+
+      if (data.type !== "transcript" || !data.final || !data.text?.trim()) {
+        return;
+      }
+
+      appendTranscriptItem({
+        id: `${data.speaker}-${data.createdAt || Date.now()}-${Math.random().toString(36).slice(2)}`,
+        speaker: data.speaker,
+        text: data.text.trim(),
+      });
+    } catch {
+      setErrorText("Received an unreadable transcript event.");
+    }
   }
 
   async function disconnectRoom() {
@@ -149,6 +192,13 @@ export function VoiceStage() {
             detachRemoteTrack();
             setAgentSpeaking(false);
           }
+        })
+        .on(RoomEvent.DataReceived, (payload, participant, _kind, topic) => {
+          if (participant?.identity !== AGENT_IDENTITY) {
+            return;
+          }
+
+          handleTranscriptData(payload, topic);
         });
 
       await room.connect(LIVEKIT_URL, token);
@@ -206,6 +256,11 @@ export function VoiceStage() {
       setStatusText("Microphone live.");
     }
   }
+
+  const latestTranscript =
+    transcriptItems.length > 0
+      ? transcriptItems[transcriptItems.length - 1].text
+      : "Transcript events will appear here once the voice session is active.";
 
   return (
     <section className={`${styles.glassCard} ${styles.stageCard}`}>
@@ -292,9 +347,20 @@ export function VoiceStage() {
 
         <div className={styles.transcriptCard}>
           <p className={styles.transcriptLabel}>Active Transcript</p>
-          <p className={styles.transcriptText}>
-            Basic voice transport is enabled. Next step is wiring STT/TTS events into this panel.
-          </p>
+          <p className={styles.transcriptText}>{latestTranscript}</p>
+
+          {transcriptItems.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {transcriptItems.map((item) => (
+                <div key={item.id}>
+                  <p className={styles.transcriptLabel}>
+                    {item.speaker === "user" ? "ART" : "MISSU"}
+                  </p>
+                  <p className={styles.transcriptText}>{item.text}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </section>
