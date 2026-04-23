@@ -1,15 +1,15 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import styles from "./agent-panel.module.css";
-import { ChatPanel } from "./chat-panel";
 import Link from "next/link";
+import styles from "@/components/agent/agent-panel.module.css";
+import { ChatPanel } from "@/components/agent/chat-panel";
 
-type AgentPanelProps = {
+type AgentPageClientProps = {
   name?: string;
 };
 
-export function AgentPanel({ name = "Art" }: AgentPanelProps) {
+export function AgentPageClient({ name = "Art" }: AgentPageClientProps) {
   const [mode, setMode] = useState<"idle" | "chat">("idle");
   const [draft, setDraft] = useState("");
 
@@ -23,12 +23,14 @@ export function AgentPanel({ name = "Art" }: AgentPanelProps) {
     setMode("chat");
   }
 
-  // function handleVoiceStart() {
-  //   setMode("chat");
-  // }
-
   if (mode === "chat") {
-    return <ChatPanel initialMessage={draft} userName={name} onBack={() => setMode("idle")} />;
+    return (
+      <ChatPanel
+        initialMessage={draft}
+        userName={name}
+        onBack={() => setMode("idle")}
+      />
+    );
   }
 
   return (
@@ -61,10 +63,7 @@ export function AgentPanel({ name = "Art" }: AgentPanelProps) {
                 Start Chat
               </button>
 
-              <Link
-                href="/voice"
-                className={styles.voiceButton}
-              >
+              <Link href="/voice" className={styles.voiceButton}>
                 Voice Session
               </Link>
             </div>

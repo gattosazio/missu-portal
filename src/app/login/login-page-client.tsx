@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { LoginHero } from "@/components/auth/login-hero";
 import { LoginCard } from "@/components/auth/login-card";
+import { LoginHero } from "@/components/auth/login-hero";
 
-export function LoginPageView() {
+export function LoginPageClient() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#f6fbff] text-slate-800">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(186,230,253,0.9),transparent_24%),radial-gradient(circle_at_top_right,rgba(219,234,254,0.95),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(224,242,254,0.9),transparent_28%),linear-gradient(to_bottom,#f9fcff_0%,#edf7ff_45%,#f7fbff_100%)]" />

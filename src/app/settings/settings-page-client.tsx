@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import styles from "./settings-panel.module.css";
+import styles from "@/components/settings/settings-panel.module.css";
 
 const THEME_KEY = "missu-theme";
 
@@ -12,7 +12,7 @@ function applyTheme(nextTheme: "light" | "dark") {
   localStorage.setItem(THEME_KEY, nextTheme);
 }
 
-export function SettingsPanel() {
+export function SettingsPageClient() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {

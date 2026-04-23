@@ -260,9 +260,9 @@ export function VoiceStage() {
     }
   }
 
-  const latestTranscript =
+  const latestTranscriptId =
     transcriptItems.length > 0
-      ? transcriptItems[transcriptItems.length - 1]
+      ? transcriptItems[transcriptItems.length - 1].id
       : null;
 
   return (
@@ -348,20 +348,8 @@ export function VoiceStage() {
           </div>
         </div>
 
-        <div className={styles.transcriptCard}>
+                <div className={styles.transcriptCard}>
           <p className={styles.transcriptLabel}>Active Transcript</p>
-
-          <p className={styles.transcriptText}>
-            {latestTranscript ? (
-              <TypewriterText
-                text={latestTranscript.text}
-                animate={latestTranscript.animate !== false}
-                speedMs={14}
-              />
-            ) : (
-              "Transcript events will appear here once the voice session is active."
-            )}
-          </p>
 
           {transcriptItems.length > 0 ? (
             <div className="mt-4 space-y-3">
@@ -373,15 +361,20 @@ export function VoiceStage() {
                   <p className={styles.transcriptText}>
                     <TypewriterText
                       text={item.text}
-                      animate={item.animate !== false}
+                      animate={item.id === latestTranscriptId && item.animate !== false}
                       speedMs={14}
                     />
                   </p>
                 </div>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <p className={styles.transcriptText}>
+              Transcript events will appear here once the voice session is active.
+            </p>
+          )}
         </div>
+
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import styles from "./admin-panel.module.css";
+import styles from "@/components/admin/admin-panel.module.css";
 
 const recentEvents = [
   {
@@ -27,7 +27,7 @@ const quickMetrics = [
   { label: "Audit Logs", value: "2.4k" },
 ];
 
-export function AdminPanel() {
+export function AdminPageClient() {
   return (
     <section className={styles.panel}>
       <div className={styles.layout}>
