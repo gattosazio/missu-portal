@@ -59,6 +59,9 @@ export function VoiceStage() {
   const localAudioTrackRef = useRef<LocalAudioTrack | null>(null);
   const remoteAudioElementRef = useRef<HTMLAudioElement | null>(null);
   const currentRemoteTrackRef = useRef<RemoteTrack | null>(null);
+  const voiceSessionRef = useRef<LiveKitSessionResponse | null>(null);
+  const disconnectIntentRef = useRef(false);
+  const teardownPromiseRef = useRef<Promise<void> | null>(null);
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -71,8 +74,24 @@ export function VoiceStage() {
   const [voiceSession, setVoiceSession] = useState<LiveKitSessionResponse | null>(null);
 
   useEffect(() => {
+    voiceSessionRef.current = voiceSession;
+  }, [voiceSession]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const session = voiceSessionRef.current;
+      if (!session?.sessionId) {
+        return;
+      }
+
+      void closeVoiceSession(session.sessionId, { keepalive: true }).catch(() => {});
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
-      void disconnectRoom({ notifyBackend: true });
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      void disconnectRoom({ notifyBackend: true, reason: "component unmount" });
     };
   }, []);
 
@@ -135,44 +154,54 @@ export function VoiceStage() {
     }
   }
 
-  async function disconnectRoom(options?: { notifyBackend?: boolean }) {
+  async function disconnectRoom(options?: { notifyBackend?: boolean; reason?: string }) {
+    if (teardownPromiseRef.current) {
+      return teardownPromiseRef.current;
+    }
+
     const notifyBackend = options?.notifyBackend ?? true;
-    const currentSession = voiceSession;
+    const reason = options?.reason || "client teardown";
+    const currentSession = voiceSessionRef.current;
 
-    if (isDisconnecting) {
-      return;
-    }
+    const teardown = (async () => {
+      setIsDisconnecting(true);
+      disconnectIntentRef.current = true;
+      setStatusText("Ending voice session...");
 
-    setIsDisconnecting(true);
-    setStatusText("Ending voice session...");
+      try {
+        detachRemoteTrack();
 
-    try {
-      detachRemoteTrack();
+        await localAudioTrackRef.current?.stop();
+        localAudioTrackRef.current = null;
 
-      await localAudioTrackRef.current?.stop();
-      localAudioTrackRef.current = null;
+        roomRef.current?.disconnect();
+        roomRef.current = null;
 
-      roomRef.current?.disconnect();
-      roomRef.current = null;
-
-      if (notifyBackend && currentSession?.sessionId) {
-        try {
-          await closeVoiceSession(currentSession.sessionId);
-        } catch (error) {
-          console.error("[VOICE DEBUG] closeVoiceSession failed", error);
+        if (notifyBackend && currentSession?.sessionId) {
+          try {
+            await closeVoiceSession(currentSession.sessionId, { keepalive: true });
+          } catch (error) {
+            console.error("[VOICE DEBUG] closeVoiceSession failed", error);
+          }
         }
+      } catch (error) {
+        console.error("[VOICE DEBUG] disconnectRoom failed", error);
+      } finally {
+        voiceSessionRef.current = null;
+        setVoiceSession(null);
+        setTranscriptItems([]);
+        setIsConnected(false);
+        setMicOn(false);
+        setAgentSpeaking(false);
+        setIsDisconnecting(false);
+        setStatusText("Voice session disconnected.");
+        disconnectIntentRef.current = false;
+        teardownPromiseRef.current = null;
       }
-    } catch (error) {
-      console.error("[VOICE DEBUG] disconnectRoom failed", error);
-    } finally {
-      setVoiceSession(null);
-      setTranscriptItems([]);
-      setIsConnected(false);
-      setMicOn(false);
-      setAgentSpeaking(false);
-      setIsDisconnecting(false);
-      setStatusText("Voice session disconnected.");
-    }
+    })();
+
+    teardownPromiseRef.current = teardown;
+    return teardown;
   }
 
   async function connectRoom() {
@@ -191,14 +220,6 @@ export function VoiceStage() {
     try {
       const session = await createVoiceSession();
 
-      console.log("[VOICE DEBUG] session created", {
-        livekitUrl: LIVEKIT_URL,
-        sessionId: session.sessionId,
-        roomName: session.roomName,
-        participantIdentity: session.participantIdentity,
-        tokenPreview: `${session.token.slice(0, 16)}...`,
-      });
-
       const room = new Room({
         adaptiveStream: true,
         dynacast: true,
@@ -206,29 +227,22 @@ export function VoiceStage() {
 
       room
         .on(RoomEvent.Connected, () => {
-          console.log("[VOICE DEBUG] room connected", {
-            roomName: session.roomName,
-            localParticipant: room.localParticipant.identity,
-          });
-
           setIsConnected(true);
           setStatusText(`Connected to ${session.roomName}. Microphone is live.`);
         })
-        .on(RoomEvent.ConnectionStateChanged, (state) => {
-          console.log("[VOICE DEBUG] connection state changed", {
-            roomName: session.roomName,
-            state,
-          });
-        })
         .on(RoomEvent.Disconnected, () => {
-          console.log("[VOICE DEBUG] room disconnected", {
-            roomName: session.roomName,
-          });
-
           detachRemoteTrack();
           setIsConnected(false);
           setMicOn(false);
           setAgentSpeaking(false);
+
+          if (!disconnectIntentRef.current && voiceSessionRef.current?.sessionId) {
+            void closeVoiceSession(voiceSessionRef.current.sessionId, {
+              keepalive: true,
+            }).catch((error) => {
+              console.error("[VOICE DEBUG] forced closeVoiceSession failed", error);
+            });
+          }
         })
         .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
           const remoteSpeaking = speakers.some(
@@ -256,16 +270,7 @@ export function VoiceStage() {
           handleTranscriptData(payload, topic);
         });
 
-      console.log("[VOICE DEBUG] attempting room.connect()", {
-        livekitUrl: LIVEKIT_URL,
-        roomName: session.roomName,
-      });
-
       await room.connect(LIVEKIT_URL, session.token);
-
-      console.log("[VOICE DEBUG] room.connect() succeeded", {
-        roomName: session.roomName,
-      });
 
       const audioTrack = await createLocalAudioTrack({
         echoCancellation: true,
@@ -287,18 +292,17 @@ export function VoiceStage() {
 
       roomRef.current = room;
       localAudioTrackRef.current = audioTrack;
+      voiceSessionRef.current = session;
       setVoiceSession(session);
       setMicOn(true);
       setStatusText(`Connected to ${session.roomName}. Sending microphone audio to Mist.`);
     } catch (error) {
-      console.error("[VOICE DEBUG] connectRoom failed", error);
-
       const message =
         error instanceof Error ? error.message : "Failed to connect voice session.";
 
       setErrorText(message);
       setStatusText("Unable to start voice session.");
-      await disconnectRoom({ notifyBackend: true });
+      await disconnectRoom({ notifyBackend: true, reason: "connect failure" });
     } finally {
       setIsConnecting(false);
     }

@@ -61,7 +61,10 @@ export async function createVoiceSession(): Promise<LiveKitSessionResponse> {
   return data;
 }
 
-export async function closeVoiceSession(sessionId: string): Promise<CloseVoiceSessionResponse> {
+export async function closeVoiceSession(
+  sessionId: string,
+  options?: { keepalive?: boolean }
+): Promise<CloseVoiceSessionResponse> {
   const authToken = getAuthToken();
 
   if (!authToken) {
@@ -73,6 +76,7 @@ export async function closeVoiceSession(sessionId: string): Promise<CloseVoiceSe
     headers: {
       Authorization: `Bearer ${authToken}`,
     },
+    keepalive: options?.keepalive ?? false,
   });
 
   const data = (await response.json()) as CloseVoiceSessionResponse | LiveKitSessionError;
