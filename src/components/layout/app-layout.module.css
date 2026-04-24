@@ -67,8 +67,13 @@
 
 .titleBlock {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  flex-direction: center;
+  gap: 0.75rem;
+}
+
+.titleLogo {
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .kicker {
