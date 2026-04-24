@@ -64,7 +64,7 @@ export function SettingsPageClient() {
                     <label className={styles.field}>
                       <span className={styles.label}>Full name</span>
                       <input
-                        defaultValue="Art Manalo"
+                        defaultValue="Art Gwapo"
                         className={styles.input}
                       />
                     </label>
@@ -72,7 +72,7 @@ export function SettingsPageClient() {
                     <label className={styles.field}>
                       <span className={styles.label}>Email address</span>
                       <input
-                        defaultValue="art@missu.portal"
+                        defaultValue="art@mist.ai"
                         type="email"
                         className={styles.input}
                       />

@@ -32,7 +32,7 @@ export function LoginPageClient() {
         >
           <div className="mx-auto max-w-4xl text-left">
             <p className="text-sm font-medium uppercase tracking-[0.28em] text-sky-600/80">
-              About MISSU
+              About Mist
             </p>
 
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
@@ -40,7 +40,7 @@ export function LoginPageClient() {
             </h2>
 
             <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
-              MISSU is designed to make company knowledge feel accessible in real time.
+              Mist is designed to make company knowledge feel accessible in real time.
               It combines natural voice interaction with policy-aware retrieval, so users can
               ask broad questions, receive clear answers, and then move into official company
               guidance when policy matters.
@@ -57,7 +57,7 @@ export function LoginPageClient() {
               <div className="rounded-2xl border border-sky-100 bg-white/70 p-5 text-center">
                 <h3 className="text-sm font-semibold text-slate-900">Policy-Aware</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  MISSU can guide users toward official policy answers when questions become company-specific.
+                  Mist can guide users toward official policy answers when questions become company-specific.
                 </p>
               </div>
 

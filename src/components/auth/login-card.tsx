@@ -53,7 +53,7 @@ export function LoginCard() {
         <div className="mb-8">
           <p className="text-sm font-medium text-sky-600">Portal Access</p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">
-            MISSU
+            Mist
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             Sign in to access the agent panel, voice sessions, and policy tools.

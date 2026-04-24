@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./app-layout.module.css";
 
@@ -14,8 +15,18 @@ export function AppHeader({
     <header className={styles.header}>
       <div className={styles.headerRow}>
         <div className={styles.titleBlock}>
-          <span className={styles.kicker}>MISSU Portal</span>
-          <h1 className={styles.title}>{title}</h1>
+          <Image
+            src="/branding/mist-logo.png"
+            alt="Mist logo"
+            width={48}
+            height={48}
+            className={styles.titleLogo}
+            priority
+          />
+          <div>
+            <span className={styles.kicker}>MIST Portal</span>
+            <h1 className={styles.title}>{title}</h1>
+          </div>
         </div>
 
         <div className={styles.headerActions}>

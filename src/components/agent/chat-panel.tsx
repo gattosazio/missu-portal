@@ -126,7 +126,7 @@ export function ChatPanel({
         <div className={styles.chatHeader}>
           <div>
             <p className={styles.chatKicker}>Live Session</p>
-            <h2 className={styles.chatTitle}>MISSU Policy Assistant</h2>
+            <h2 className={styles.chatTitle}>Mist Policy Assistant</h2>
             <p className={styles.chatSubtitle}>Active conversation for {userName}</p>
           </div>
 
@@ -164,7 +164,7 @@ export function ChatPanel({
 
           {isLoading ? (
             <article className={`${styles.message} ${styles.assistantMessage}`}>
-              <span className={styles.messageRole}>MISSU</span>
+              <span className={styles.messageRole}>Mist</span>
               <p className={styles.messageText}>
                 <TypewriterText text="Thinking..." animate speedMs={40} />
               </p>

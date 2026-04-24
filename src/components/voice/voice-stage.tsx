@@ -102,7 +102,7 @@ export function VoiceStage() {
       setErrorText("Connected, but the browser blocked audio autoplay.");
     });
 
-    setStatusText(`Connected. Receiving audio from ${publication.trackName || "MISSU"}.`);
+    setStatusText(`Connected. Receiving audio from ${publication.trackName || "Mist"}.`);
   }
 
   function handleTranscriptData(payload: Uint8Array, topic?: string) {
@@ -276,7 +276,7 @@ export function VoiceStage() {
           <div>
             <h2 className={styles.stageTitle}>Live Voice Room</h2>
             <p className={styles.stageSubtitle}>
-              Real-time conversation between the user and MISSU.
+              Real-time conversation between the user and Mist.
             </p>
           </div>
 
@@ -319,7 +319,7 @@ export function VoiceStage() {
               {isConnecting
                 ? "Connecting to LiveKit..."
                 : micOn
-                  ? "Mic is on and streaming to MISSU"
+                  ? "Mic is on and streaming to Mist"
                   : isConnected
                     ? "Mic is muted"
                     : "Click the mic to start voice"}
@@ -327,7 +327,7 @@ export function VoiceStage() {
           </div>
 
           <div className={`${styles.participantCard} ${styles.agentCard}`}>
-            <p className={styles.participantName}>MISSU</p>
+            <p className={styles.participantName}>Mist</p>
 
             <div className={styles.agentVisual}>
               <div className={styles.ringScene}>
@@ -356,7 +356,7 @@ export function VoiceStage() {
               {transcriptItems.map((item) => (
                 <div key={item.id}>
                   <p className={styles.transcriptLabel}>
-                    {item.speaker === "user" ? "ART" : "MISSU"}
+                    {item.speaker === "user" ? "ART" : "Mist"}
                   </p>
                   <p className={styles.transcriptText}>
                     <TypewriterText

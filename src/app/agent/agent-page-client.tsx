@@ -45,7 +45,7 @@ export function AgentPageClient({ name = "Art" }: AgentPageClientProps) {
           </h2>
 
           <p className={styles.subtitle}>
-            Ask about company rules, procedures, or department-specific policies and MISSU will help
+            Ask about company rules, procedures, or department-specific policies and Mist will help
             you navigate the right policy context.
           </p>
 

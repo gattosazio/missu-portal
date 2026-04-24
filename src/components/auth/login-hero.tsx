@@ -17,7 +17,7 @@ export function LoginHero() {
         </h2>
 
         <p className={styles.description}>
-          MISSU combines real-time voice interaction with grounded company policy
+          Mist combines real-time voice interaction with grounded company policy
           retrieval, so answers feel fast, clear, and ready for work.
         </p>
 
